@@ -32,6 +32,17 @@ jobs:
             cd app
             yarn install
             yarn audit --audit-level=critical
+  lint-app:
+    docker:
+      - image: cimg/node:18.0.0
+    steps:
+      - checkout
+      - run:
+          name: Lint App
+          command: |
+            cd app
+            yarn install
+            yarn lint
 
 workflows:
   version: 2
@@ -39,4 +50,6 @@ workflows:
     jobs:
       - build-app
       - scan-app:
+          requires: [build-app]
+      - lint-app:
           requires: [build-app]
