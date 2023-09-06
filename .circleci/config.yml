@@ -21,8 +21,23 @@ jobs:
             cd app
             yarn install
             yarn build
+  test-app:
+    docker:
+      - image: cimg/node:18.0.0
+    steps:
+      - checkout
+      - run:
+          name: Test App
+          command: |
+            cd app
+            yarn install
+            yarn test
+    depends_on:
+      - build-app
 workflows:
   version: 2
   default:
     jobs:
       - build-app
+      - test-app:
+          requires: [build-app]
