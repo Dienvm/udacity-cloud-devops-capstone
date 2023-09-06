@@ -45,7 +45,7 @@ jobs:
             yarn lint
   build-fe-docker-img:
     docker:
-      - image: cimg/node:18.0.0
+      - image: cimg/base:2022.06
     steps:
       - checkout
       - run:
