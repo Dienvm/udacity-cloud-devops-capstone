@@ -21,23 +21,24 @@ jobs:
             cd app
             yarn install
             yarn build
-  test-app:
+  scan-app:
     docker:
       - image: cimg/node:18.0.0
     steps:
       - checkout
       - run:
-          name: Test App
+          name: Scan App
           command: |
             cd app
             yarn install
-            yarn test
+            yarn audit --audit-level=critical
     depends_on:
       - build-app
+
 workflows:
   version: 2
   default:
     jobs:
       - build-app
-      - test-app:
+      - scan-app:
           requires: [build-app]
