@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "ClusterName",
+    "ParameterValue": "devops-capstone-cluster"
+  },
+  {
+    "ParameterKey": "StackName",
+    "ParameterValue": "devops-capstone"
+  }
+]
