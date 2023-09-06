@@ -49,15 +49,19 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Login Docker
+          name: login docker
           command: docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
       - run:
           name: Build Frontend Docker Image
           command: |
-            IMAGE_TAG=${CIRCLE_SHA1:0:7}
-            DOCKER_REPO=dienvm1/devops-capstone
-            docker build -t $DOCKER_REPO:$IMAGE_TAG .
-            docker push $DOCKER_REPO:$IMAGE_TAG
+            docker/build-docker.sh latest 
+            docker/build-docker.sh ${CIRCLE_SHA1:0:7}
+      - run:
+          name: push docker img
+          command: |
+            chmod +x docker/upload-docker.sh
+            docker/upload-docker.sh latest 
+            docker/upload-docker.sh ${CIRCLE_SHA1:0:7}
 
 workflows:
   version: 2
