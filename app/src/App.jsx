@@ -54,7 +54,7 @@ function App() {
         <div className="mt-6">
           <h2 className="text-xl font-semibold">About Me</h2>
           <p className="mt-2 text-gray-700">
-            Hello! I'm Dien Vo, a web developer passionate about creating
+            Hello! I&apos;m Dien Vo, a web developer passionate about creating
             awesome web applications. I have experience in frontend and backend
             technologies, and I love to solve complex problems.
           </p>

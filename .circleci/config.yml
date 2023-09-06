@@ -43,6 +43,21 @@ jobs:
             cd app
             yarn install
             yarn lint
+  build-fe-docker-img:
+    docker:
+      - image: cimg/node:18.0.0
+    steps:
+      - checkout
+      - run:
+          name: Login Docker
+          command: docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+      - run:
+          name: Build Frontend Docker Image
+          command: |
+            IMAGE_TAG=${CIRCLE_SHA1:0:7}
+            DOCKER_REPO=dienvm1/devops-capstone
+            docker build -t $DOCKER_REPO:$IMAGE_TAG .
+            docker push $DOCKER_REPO:$IMAGE_TAG
 
 workflows:
   version: 2
@@ -53,3 +68,5 @@ workflows:
           requires: [build-app]
       - lint-app:
           requires: [build-app]
+      - build-fe-docker-img:
+          requires: [scan-app, lint-app]
