@@ -1,6 +1,7 @@
 version: 2.1
+
 orbs:
-  aws: circleci/aws-cli@3.1.5
+  aws: circleci/aws-cli@1.1.0
   python: circleci/python@2.1.1
 
 executors:
@@ -13,24 +14,27 @@ commands:
     description: install dependencies and setup aws cli
     steps:
       - run:
-          name: install dependencies
+          name: Install Dependencies
           command: |
-            sudo apt upgrade
-            sudo apt update
-            sudo apt install awscli -y
+            sudo apt-get update
+            sudo apt-get install -y awscli
+
       - run:
-          name: config awscli
+          name: Config AWS CLI
           command: |
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             aws configure set region $AWS_DEFAULT_REGION
+
   setup_aws:
     description: setup aws
     steps:
       - aws/setup:
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-session-token: AWS_SESSION_TOKEN
           aws-region: AWS_DEFAULT_REGION
+
   setup-kubectl:
     description: Install kubectl
     steps:
@@ -42,26 +46,27 @@ commands:
             chmod +x ./kubectl
             mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
             kubectl version --short --client
+
   setup-eksctl:
+    description: Install eksctl
     steps:
       - run:
-          name: install eksctl
+          name: Install eksctl
           command: |
             ARCH=amd64
-            PLATFORM=$(uname -s)_$ARCH
-
-            curl -sLO "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
-            tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+            PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')_$ARCH
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz" | tar xz -C /tmp
             sudo mv /tmp/eksctl /usr/local/bin
             eksctl version
+
   revert-deploy:
     description: Revert deploy
     steps:
       - run:
-          name: revert
+          name: Revert
           command: |
-            kubectl rollout undo deployment uda-capstone
-            kubectl describe deployment uda-capstone
+            kubectl rollout undo deployment devops-capstone
+            kubectl describe deployment devops-capstone
             kubectl get all
           when: on_fail
 
@@ -126,7 +131,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: login docker
+          name: Login Docker
           command: docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
       - run:
           name: Build Frontend Docker Image
@@ -142,8 +147,6 @@ jobs:
     steps:
       - checkout
       - install_dependencies
-      - setup_aws
-      - setup-kubectl
       - setup-eksctl
       - run:
           name: Create an EKS Cluster
