@@ -1,21 +1,21 @@
+# Stage 1: Build the application
 FROM node:16.20-alpine3.16 as build
 
-## Step 1:
 # Create a working directory
 WORKDIR /app
 
-## Step 2:
 # Copy source code to working directory
-COPY app .
+COPY . .
 
-## Step 3:
+# Install dependencies and build the application
 RUN yarn install
 RUN yarn build
 
-CMD [ "yarn", "start" ]
-# ## Step 4:
+# Stage 2: Create the production image
 FROM nginx:1.25.0-alpine
-# Copy config nginx
+
+# Copy the built application from the build stage to the NGINX web root
 COPY --from=build /app/build /usr/share/nginx/html
-# Containers run nginx with global directives and daemon off
+
+# Containers run NGINX with global directives and daemon off
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
