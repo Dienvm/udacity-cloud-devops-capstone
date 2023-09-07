@@ -149,6 +149,7 @@ jobs:
             aws eks update-kubeconfig --region us-east-1 --name devops-capstone-cluster
             kubectl config get-contexts
             kubectl get all
+            kubectl describe deployment devops-capstone
 
       - run:
           name: deploy app
