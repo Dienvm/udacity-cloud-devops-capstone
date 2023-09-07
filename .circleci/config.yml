@@ -135,7 +135,7 @@ jobs:
             docker/upload-docker.sh ${CIRCLE_SHA1:0:7}
   deploy-app:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:18.0.0
     steps:
       - checkout
       - install_dependencies
@@ -149,7 +149,6 @@ jobs:
             aws eks update-kubeconfig --region us-east-1 --name devops-capstone-cluster
             kubectl config get-contexts
             kubectl get all
-            kubectl describe deployment devops-capstone
 
       - run:
           name: deploy app
