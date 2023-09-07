@@ -8,6 +8,66 @@ executors:
   node:
     docker:
       - image: cimg/node:18.0.0
+commands:
+  install_dependencies:
+    description: install dependencies and setup aws cli
+    steps:
+      - run:
+          name: Install Dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y awscli
+
+      - run:
+          name: Config AWS CLI
+          command: |
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            aws configure set region $AWS_DEFAULT_REGION
+
+  setup_aws:
+    description: setup aws
+    steps:
+      - aws/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-session-token: AWS_SESSION_TOKEN
+          aws-region: AWS_DEFAULT_REGION
+
+  setup-kubectl:
+    description: Install kubectl
+    steps:
+      - run:
+          name: Install kubectl
+          command: |
+            sudo apt update
+            curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.23.17/2023-05-11/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+            kubectl version --short --client
+
+  setup-eksctl:
+    description: Install eksctl
+    steps:
+      - run:
+          name: Install eksctl
+          command: |
+            ARCH=amd64
+            PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')_$ARCH
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz" | tar xz -C /tmp
+            sudo mv /tmp/eksctl /usr/local/bin
+            eksctl version
+
+  revert-deploy:
+    description: Revert deploy
+    steps:
+      - run:
+          name: Revert
+          command: |
+            kubectl rollout undo deployment devops-capstone
+            kubectl describe deployment devops-capstone
+            kubectl get all
+          when: on_fail
 
 jobs:
   build-app:
@@ -15,17 +75,24 @@ jobs:
       - image: cimg/node:18.0.0
     steps:
       - checkout
+      - restore_cache:
+          key: fe-build--{{ .Revision  }}
       - run:
           name: Build App
           command: |
             cd app
             yarn install
             yarn build
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: fe-build--{{ .Revision  }}
   scan-app:
     docker:
       - image: cimg/node:18.0.0
     steps:
       - checkout
+      - restore_cache:
+          key: fe-build--{{ .Revision  }}
       - run:
           name: Scan app
           command: |
@@ -37,6 +104,8 @@ jobs:
       - image: cimg/node:18.0.0
     steps:
       - checkout
+      - restore_cache:
+          key: fe-build--{{ .Revision  }}
       - run:
           name: Lint App
           command: |
@@ -65,6 +134,29 @@ jobs:
             chmod +x docker/upload-docker.sh
             docker/upload-docker.sh latest 
             docker/upload-docker.sh ${CIRCLE_SHA1:0:7}
+  deploy-app:
+    docker:
+      - image: cimg/node:18.0.0
+    steps:
+      - checkout
+      - install_dependencies
+      - setup-eksctl
+      - run:
+          name: Create an EKS Cluster
+          command: |
+            aws eks update-kubeconfig --region us-east-1 --name devops-capstone-cluster
+            kubectl config get-contexts
+            kubectl get all
+            kubectl describe deployment devops-capstone
+
+      - run:
+          name: Deploy App
+          command: |
+            kubectl set image deployment/devops-capstone uda-app=dienvm1/devops-capstone:${CIRCLE_SHA1:0:7}
+            kubectl rollout status deployment devops-capstone
+            kubectl describe deployment devops-capstone
+            kubectl get all
+      - revert-deploy
 
 workflows:
   version: 2
