@@ -169,3 +169,5 @@ workflows:
           requires: [build-app]
       - build-fe-docker-img:
           requires: [scan-app, lint-app]
+      - deploy-app:
+          requires: [build-fe-docker-img]
