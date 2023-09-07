@@ -135,7 +135,7 @@ jobs:
             docker/upload-docker.sh ${CIRCLE_SHA1:0:7}
   deploy-app:
     docker:
-      - image: cimg/node:18.0.0
+      - image: cimg/base:stable
     steps:
       - checkout
       - install_dependencies
@@ -145,17 +145,17 @@ jobs:
       - run:
           name: Create an EKS Cluster
           command: |
-            aws eks update-kubeconfig --region us-east-1 --name devops-capstone-cluster
+            aws eks update-kubeconfig --region us-east-1 --name uda-capstone-cluster
             kubectl config get-contexts
             kubectl get all
-            kubectl describe deployment devops-capstone
+            kubectl describe deployment uda-capstone
 
       - run:
-          name: Deploy App
+          name: deploy app
           command: |
-            kubectl set image deployment/devops-capstone uda-app=dienvm1/devops-capstone:${CIRCLE_SHA1:0:7}
-            kubectl rollout status deployment devops-capstone
-            kubectl describe deployment devops-capstone
+            kubectl set image deployment/uda-capstone uda-app=dienvm1/devops-capstone:${CIRCLE_SHA1:0:7}
+            kubectl rollout status deployment uda-capstone
+            kubectl describe deployment uda-capstone
             kubectl get all
       - revert-deploy
 
