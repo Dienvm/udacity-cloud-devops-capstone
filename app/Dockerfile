@@ -16,6 +16,6 @@ CMD [ "yarn", "start" ]
 # ## Step 4:
 FROM nginx:1.25.0-alpine
 # Copy config nginx
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 # Containers run nginx with global directives and daemon off
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
