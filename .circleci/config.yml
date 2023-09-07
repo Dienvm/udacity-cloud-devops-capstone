@@ -145,7 +145,8 @@ jobs:
       - run:
           name: Create an EKS Cluster
           command: |
-            eksctl create cluster --name devops-capstone-cluster --region us-east-1
+            # eksctl create cluster --name devops-capstone-cluster --region us-east-1
+            aws eks update-kubeconfig --region us-east-1 --name devops-capstone-cluster
             kubectl config get-contexts
             kubectl get all
             kubectl describe deployment devops-capstone
