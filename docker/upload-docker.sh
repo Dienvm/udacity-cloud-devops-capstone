@@ -2,5 +2,4 @@
 TAG=$1
 
 pwd
-docker dienvm1/devops-capstone:$TAG
-
+docker push dienvm1/devops-capstone:$TAG

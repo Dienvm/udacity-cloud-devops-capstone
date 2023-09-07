@@ -126,13 +126,13 @@ jobs:
           name: Build Frontend Docker Image
           command: |
             chmod +x docker/build-docker.sh
-            docker/build-docker.sh latest 
+            docker/build-docker.sh latest
             docker/build-docker.sh ${CIRCLE_SHA1:0:7}
       - run:
-          name: push docker img
+          name: push Docker Image
           command: |
             chmod +x docker/upload-docker.sh
-            docker/upload-docker.sh latest 
+            docker/upload-docker.sh latest
             docker/upload-docker.sh ${CIRCLE_SHA1:0:7}
   deploy-app:
     docker:
