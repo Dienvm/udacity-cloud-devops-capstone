@@ -140,6 +140,8 @@ jobs:
     steps:
       - checkout
       - install_dependencies
+      - setup_aws
+      - setup-kubectl
       - setup-eksctl
       - run:
           name: Create an EKS Cluster
